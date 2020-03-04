@@ -27,7 +27,7 @@ public class Main {
 
         System.out.println(appleBox.getWeight());
         System.out.println(appleBox2.getWeight());
-        
+
     }
 }
 
