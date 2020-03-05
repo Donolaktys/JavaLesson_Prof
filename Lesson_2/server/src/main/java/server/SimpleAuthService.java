@@ -1,54 +1,71 @@
 package server;
 
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class SimpleAuthService implements AuthService {
-
-    private class UserData {
-        String login;
-        String password;
-        String nickname;
-
-        public UserData(String login, String password, String nickname) {
-            this.login = login;
-            this.password = password;
-            this.nickname = nickname;
-        }
-    }
-
-    private List<UserData> users;
+    private static Connection connection;
+    private static Statement stmt;
+    private static PreparedStatement ps;
 
     public SimpleAuthService() {
-        users = new ArrayList<>();
-        for (int i = 1; i <= 10; i++) {
-            users.add(new UserData("login" + i, "pass" + i, "nick" + i));
-        }
+
     }
 
     @Override
     public String getNicknameByLoginAndPassword(String login, String password) {
-        for (UserData o : users) {
-            if (o.login.equals(login) && o.password.equals(password)) {
-                return o.nickname;
+
+        try {
+            connectUserDB();
+            ps = connection.prepareStatement("SELECT password, nick FROM Users WHERE login = ?");
+            ps.setString(1, login);
+            ResultSet rs = ps.executeQuery();
+            if (rs.getString(1).equals(password)) {
+                return rs.getString(2);
             }
+        } catch (Exception e) {
+            return null;
+        } finally {
+            disconnectUserDB();
         }
         return null;
     }
 
     @Override
     public boolean registration(String login, String password, String nickname) {
-        for (UserData o : users) {
-            if (o.login.equals(login)) {
-                return false;
-            }
-        }
 
-        if (password.trim().equals("")) {
+        try {
+            connectUserDB();
+            ps = connection.prepareStatement("INSERT INTO Users (login, password, nick) VALUES (?,?,?);");
+            ps.setString(1, login);
+            ps.setString(2, password);
+            ps.setString(3, nickname);
+            ps.executeUpdate();
+        } catch (Exception e) {
             return false;
+        } finally {
+            disconnectUserDB();
         }
-
-        users.add(new UserData(login, password, nickname));
         return true;
+    }
+
+    public static void connectUserDB() throws ClassNotFoundException, SQLException {
+        Class.forName("org.sqlite.JDBC");
+        connection = DriverManager.getConnection("jdbc:sqlite:regUsers.db");
+        stmt = connection.createStatement();
+    }
+
+    public static void disconnectUserDB() {
+        try {
+            stmt.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        try {
+            connection.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }
