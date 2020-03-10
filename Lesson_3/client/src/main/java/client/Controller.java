@@ -18,9 +18,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.URL;
@@ -51,8 +49,11 @@ public class Controller implements Initializable {
 
     private boolean authenticated;
     private String nickname;
+    private String login;
 
     Stage regStage;
+
+    private History history;
 
     public void setAuthenticated(boolean authenticated) {
         this.authenticated = authenticated;
@@ -82,6 +83,7 @@ public class Controller implements Initializable {
                     if (socket != null && !socket.isClosed()) {
                         try {
                             out.writeUTF("/end");
+                            history.saveHistory(textArea.getText());
                             socket.close();
                         } catch (IOException e) {
                             e.printStackTrace();
@@ -107,6 +109,7 @@ public class Controller implements Initializable {
                         if (str.startsWith("/authok ")) {
                             setAuthenticated(true);
                             nickname = str.split(" ")[1];
+                            history = new History(login);
                             break;
                         }
                         textArea.appendText(str + "\n");
@@ -114,11 +117,18 @@ public class Controller implements Initializable {
 
                     setTitle("chat 2020 : " + nickname);
 
+                    //  добавляем историю сообщений после успешной аутентификации
+                    if (history.loadHistory() != null) {
+                        textArea.appendText(history.loadHistory());
+                    }
+
                     //цикл работы
                     while (true) {
                         String str = in.readUTF();
+
                         if (str.startsWith("/")) {
                             if (str.equals("/end")) {
+                                history.saveHistory(textArea.getText());
                                 setAuthenticated(false);
                                 break;
                             }
@@ -182,6 +192,7 @@ public class Controller implements Initializable {
             out.writeUTF("/auth " + loginField.getText() + " " + passwordField.getText());
 //            loginField.clear();
             passwordField.clear();
+            login = loginField.getText();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -237,4 +248,6 @@ public class Controller implements Initializable {
             e.printStackTrace();
         }
     }
+
+
 }
