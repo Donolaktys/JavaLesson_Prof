@@ -131,6 +131,10 @@ public class Controller implements Initializable {
                                     }
                                 });
                             }
+                            if (str.startsWith("/yournickis ")) {
+                                nickname = str.split(" ")[1];
+                                setTitle("chat 2020 : " + nickname);
+                            }
 
                         } else {
                             textArea.appendText(str + "\n");
@@ -191,14 +195,8 @@ public class Controller implements Initializable {
 
     public void clickClientList(MouseEvent mouseEvent) {
 //        System.out.println(clientList.getSelectionModel().getSelectedItem());
-        try {
-    //            String receiver = clientList.getSelectionModel().getSelectedItem().toString();
-            if (clientList.getSelectionModel().getSelectedItem().toString() != null) {
-                textField.setText("/w " + clientList.getSelectionModel().getSelectedItem().toString() + " ");
-            }
-        } catch (RuntimeException e) {
-            return;
-        }
+        String receiver = clientList.getSelectionModel().getSelectedItem().toString();
+        textField.setText("/w " + receiver + " ");
 
     }
 
