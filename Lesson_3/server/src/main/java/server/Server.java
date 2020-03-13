@@ -8,18 +8,22 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
 import java.util.Vector;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Server {
     private Vector<ClientHandler> clients;
     private AuthService authService;
+    private ExecutorService eService;
 
     public AuthService getAuthService() {
         return authService;
     }
 
     public Server() {
+
         clients = new Vector<>();
-//        authService = new SimpleAuthService();
+        //        authService = new SimpleAuthService();
         if (!SQLHandler.connect()) {
             throw new RuntimeException("Не удалось подключиться к БД");
         }
@@ -31,11 +35,16 @@ public class Server {
         try {
             server = new ServerSocket(8189);
             System.out.println("Сервер запустился");
+            eService = Executors.newCachedThreadPool();
 
             while (true) {
                 socket = server.accept();
+                final Socket fSocket = socket;
                 System.out.println("Клиент подключился");
-                new ClientHandler(socket, this);
+                eService.execute(() -> {
+                    new ClientHandler(fSocket, this);
+                });
+
             }
 
         } catch (IOException e) {
@@ -43,6 +52,7 @@ public class Server {
         } finally {
             SQLHandler.disconnect();
             try {
+                eService.shutdown();
                 server.close();
             } catch (IOException e) {
                 e.printStackTrace();
