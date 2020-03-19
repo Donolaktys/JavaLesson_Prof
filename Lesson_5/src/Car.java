@@ -1,10 +1,13 @@
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Car implements Runnable {
     private static int CARS_COUNT;
+    private static AtomicInteger ai;
 
     static {
         CARS_COUNT = 0;
+        ai = new AtomicInteger(0);
     }
 
     private Race race;
@@ -38,6 +41,10 @@ public class Car implements Runnable {
 
             for (int i = 0; i < race.getStages().size(); i++) {
                 race.getStages().get(i).go(this);
+            }
+
+            if (ai.incrementAndGet() == 1) {
+                System.out.println(this.name + " WIN!!!!!");
             }
 
             MainClass.cdl.countDown();
