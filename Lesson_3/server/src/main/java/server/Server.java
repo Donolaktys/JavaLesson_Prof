@@ -1,20 +1,16 @@
 package server;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Scanner;
 import java.util.Vector;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.logging.Logger;
 
 public class Server {
+    public static final Logger logger = Logger.getLogger(Server.class.getName());
+
     private Vector<ClientHandler> clients;
     private AuthService authService;
-    private ExecutorService eService;
 
     public AuthService getAuthService() {
         return authService;
@@ -23,7 +19,6 @@ public class Server {
     public Server() {
 
         clients = new Vector<>();
-        //        authService = new SimpleAuthService();
         if (!SQLHandler.connect()) {
             throw new RuntimeException("Не удалось подключиться к БД");
         }
@@ -34,25 +29,21 @@ public class Server {
 
         try {
             server = new ServerSocket(8189);
-            System.out.println("Сервер запустился");
-            eService = Executors.newCachedThreadPool();
+            logger.info("Сервер запустился");
 
             while (true) {
                 socket = server.accept();
                 final Socket fSocket = socket;
-                System.out.println("Клиент подключился");
-                eService.execute(() -> {
-                    new ClientHandler(fSocket, this);
-                });
-
+                logger.info("Открыт новый сокет");
+                new ClientHandler(fSocket, this);
             }
 
         } catch (IOException e) {
             e.printStackTrace();
+            logger.throwing("Server", "close", e);
         } finally {
             SQLHandler.disconnect();
             try {
-                eService.shutdown();
                 server.close();
             } catch (IOException e) {
                 e.printStackTrace();

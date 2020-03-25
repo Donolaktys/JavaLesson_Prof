@@ -8,7 +8,6 @@ public class MainClass {
     }
 
     public static boolean verification(int[] arr) {
-        boolean result = false;
         boolean oneOrFour = true;
         boolean checkChange = false;
         for (int i = 0; i < arr.length; i++) {
