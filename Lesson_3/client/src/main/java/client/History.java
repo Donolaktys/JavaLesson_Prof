@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 public class History {
     private final String historyDir = System.getProperty("user.home") + "\\chat_history";
-    File history;
+    private File history;
     private File dir = new File(historyDir);
 
     // в конструкторе создаем \chat_history\history_userLogin.txt в папке пользователя ОС,
@@ -34,20 +34,6 @@ public class History {
     }
 
     public String loadHistory() {
-//        String msg = null;
-//        try (BufferedReader reader = new BufferedReader(new FileReader(history))) {
-//            String r;
-//            while ((r = reader.readLine()) != null) {
-//                if (msg == null) {
-//                    msg = r + "\n";
-//                }
-//                msg += r + "\n";
-//            }
-//        }catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        return msg;
-//    }
         ArrayList<String> list = null;
         String msg = null;
         try (BufferedReader reader = new BufferedReader(new FileReader(history))) {
